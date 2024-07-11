@@ -56,7 +56,7 @@ class ScrapHeap
 public:
 	static void Install()
 	{
-		static REL::Relocation<std::uintptr_t> target{ REL::ID(2228361) };
+		static REL::Relocation<std::uintptr_t> target{ REL::RelocationID(126418, 2228361) };
 		stl::asm_replace(target.address(), 0x10, reinterpret_cast<std::uintptr_t>(QMaxMemory));
 
 		switch (*Config::General::iScrapHeapMult)
@@ -90,6 +90,24 @@ private:
 
 	inline static std::uint32_t MaxMemory{ 0x04000000 };
 };
+
+DLLEXPORT bool F4SEAPI F4SEPlugin_Query(const F4SE::QueryInterface* a_F4SE, F4SE::PluginInfo* a_info)
+{
+	a_info->infoVersion = F4SE::PluginInfo::kVersion;
+	a_info->name = Plugin::NAME.data();
+	a_info->version = Plugin::Version;
+
+	const auto rtv = a_F4SE->RuntimeVersion();
+	if (rtv < (REL::Relocate(F4SE::RUNTIME_1_10_163, F4SE::RUNTIME_LATEST, F4SE::RUNTIME_LATEST_VR)))
+	{
+		F4SE::stl::report_and_fail(
+			fmt::format(
+				FMT_STRING("{} does not support runtime v{}."sv),
+				a_info->name,
+				rtv.string()));
+	}
+	return true;
+}
 
 DLLEXPORT bool F4SEAPI F4SEPlugin_Load(const F4SE::LoadInterface* a_F4SE)
 {
